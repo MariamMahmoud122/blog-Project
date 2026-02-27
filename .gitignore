@@ -1,0 +1,19 @@
+# Ignore uploads folder (user images, posts images)
+uploads/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore PHP session files
+*.sess
+
+# Ignore composer/vendor if فيه
+vendor/
+
+# Ignore node_modules if فيه frontend build
+node_modules/
+
+# Ignore environment/config files if فيه credentials
+.env
+config.php
