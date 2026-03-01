@@ -3,28 +3,24 @@ session_start();
 require "db.php"; 
 
 
-if (isset($_POST['delete_post'])) {
+// if (isset($_POST['delete_post'])) {
 
-    $post_id = intval($_POST['post_id']);
+//     $post_id = intval($_POST['post_id']);
 
-    $stmt = $conn->prepare("
-        UPDATE posts 
-        SET deleted_at = NOW()
-        WHERE id=? AND (user_id=? OR ?='admin')
-    ");
+//     $stmt = $conn->prepare("
+//         UPDATE posts 
+//         SET deleted_at = NOW()
+//         WHERE id=? AND (user_id=? OR ?='admin')
+//     ");
 
-    $stmt->bind_param("iis", $post_id, $_SESSION['user_id'], $_SESSION['role']);
-    $stmt->execute();
-    $stmt->close();
+//     $stmt->bind_param("iis", $post_id, $_SESSION['user_id'], $_SESSION['role']);
+//     $stmt->execute();
+//     $stmt->close();
 
-    header("Location: posts.php");
-    exit;
-}
-if (isset($_GET['success']) && $_GET['success'] == 1) {
-    echo "<script>
-        alert('Post added successfully');
-    </script>";
-}
+//     header("Location: posts.php");
+//     exit;
+// }
+
 
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_name'])) {
@@ -39,7 +35,7 @@ $stmt = $conn->prepare("SELECT profile_img FROM users WHERE id=?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
-$user = $result->fetch_assoc();
+$user = $result->fetch_assoc();    
 $stmt->close();
 
 $profile_img = $user['profile_img'] ?? 'default.png';
@@ -304,7 +300,7 @@ function displayComments($conn, $post_id, $parent_id = NULL, $margin = 0) {
         FROM post_comments
         JOIN users ON post_comments.user_id = users.id
         WHERE post_id = $post_id 
-AND parent_id IS NULL
+    AND parent_id IS NULL
 AND deleted_at IS NULL
         ORDER BY created_at ASC
         ";
@@ -408,6 +404,7 @@ echo "</div>";
 <title>Blog Posts</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn-script.com/ajax/libs/jquery/3.7.1/jquery.js"></script>
 <style>
 
 body { font-family: Arial, sans-serif; background: #f4f4f9; margin:0; padding:0;}
@@ -528,6 +525,9 @@ a {
     </div>
   </div>
 </nav>
+<div class="d-flex">
+<?php include "sidebar.php"; ?>
+<div class="flex-grow-1 p-4">
 
 <header style="display:flex; align-items:center; justify-content:space-between; padding:20px; background:#667eea; color:white;">
     
@@ -546,7 +546,7 @@ a {
 
                 <label for="profile-upload"
                        style="position:absolute; bottom:0; right:0; background:white; color:black; border-radius:50%; padding:5px; cursor:pointer;">
-                    ✏
+                    <i class="fa-solid fa-pen"></i>
                 </label>
 
             </form>
@@ -556,6 +556,8 @@ a {
         <h1 style="margin:0;">
             Welcome, <?= htmlspecialchars($_SESSION['user_name']) ?>!
         </h1>
+
+    
 
     </div>
 
@@ -609,6 +611,12 @@ a {
     </select>
 
     <?php if(isset($_SESSION['role']) && $_SESSION['role'] == 'admin'): ?>
+        <!-- <select name="category">
+        <option value="">Select Category</option>
+        <?php foreach($categories as $key => $val): ?>
+            <option value="<?= $key ?>" <?= ($oldCategory==$key)?'selected':'' ?>><?= $val ?></option>
+        <?php endforeach; ?>
+    </select> -->
         <input type="text" name="new_category" placeholder="Add new category" value="<?= htmlspecialchars($_POST['new_category'] ?? '') ?>">
     <?php endif; ?>
 
@@ -639,18 +647,18 @@ a {
             <!-- Edit -->
             <a href="edit_post.php?id=<?= $row['id'] ?>" 
                style="color:#667eea; font-size:14px; text-decoration:none;">
-               <i class="fa-solid fa-ellipsis"></i> Edit
+               <i class="fa-solid fa-ellipsis"></i> 
             </a>
 
             <!-- Delete -->
-            <form method="POST" onsubmit="return confirmDelete();" style="display:inline;">
+            <!-- <form method="POST" onsubmit="return confirmDelete();" style="display:inline;">
                 <input type="hidden" name="post_id" value="<?= $row['id'] ?>">
                 
                 <button type="submit" name="delete_post"
                         style="background:none;border:none;color:red;cursor:pointer;font-size:14px;">
                     <i class="fa-regular fa-trash-can"></i> Delete
                 </button>
-            </form>
+            </form> -->
 
         </div>
 
@@ -772,7 +780,42 @@ document.querySelectorAll('.like-btn').forEach(btn => {
         });
     });
 });
+
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</div>
+</div>
+
+<?php if (isset($_GET['success'])): ?>
+    <div id="success-alert" style="
+        position: fixed;
+         text-align: center;
+        width: 25%;
+        height: 20%;
+        top: 50%;
+        left: 50%;
+        background: #b7c7e4;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 5px;
+        z-index: 1000;
+        display: inline-block;
+        padding: 47px">
+       added successfully
+       
+        <br>
+       <i class="fa-sharp-duotone fa-solid fa-check"></i>
+    </div>
+
+    <script src="https://code.jquery.com"></script>
+    <script>
+        $(document).ready(function() {
+           
+            $("#success-alert").fadeIn(400).delay(2000).fadeOut(600);
+        });
+    </script>
+<?php endif; ?>
+
 </body>
 </html>
